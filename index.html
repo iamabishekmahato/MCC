@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MCC DATA CENTER</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; }
+        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        .hidden { display: none; }
+        h2 { text-align: center; color: #1a73e8; font-size: 1.3rem; margin-bottom: 20px; }
+        
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-blue { background: #1a73e8; color: white; }
+        .btn-green { background: #34a853; color: white; }
+        .btn-orange { background: #fbbc05; color: #333; }
+        .btn-purple { background: #673ab7; color: white; }
+        .btn-back { background: #f1f3f4; color: #5f6368; }
+        .btn-red { background: #ea4335; color: white; padding: 6px 12px; width: auto; font-size: 12px; border-radius: 6px; }
+        .badge { background: #ea4335; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
+
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; font-weight: 600; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+
+        .table-wrapper { overflow-x: auto; margin-top: 10px; border-radius: 8px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; min-width: 450px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; }
+        
+        #lock-screen { text-align: center; padding: 40px 10px; }
+        .lock-icon { font-size: 50px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="main-menu">
+        <h2>WEL-COME ON MCC</h2>
+        <button class="btn-green" onclick="show('admission-form')">📝 Online Admissions</button>
+        <button class="btn-blue" onclick="show('view-all-records')">Student Role (View Records)</button>
+        <button class="btn-orange" onclick="show('lock-screen')">Teacher Role (Admin)</button>
+    </div>
+
+    <div id="admission-form" class="hidden">
+        <h2>Online Admission</h2>
+        <div class="form-group"><label>Full Name</label><input type="text" id="adm-name"></div>
+        <div class="form-group"><label>Interested Class</label><input type="text" id="adm-class"></div>
+        <div class="form-group"><label>Contact Number</label><input type="tel" id="adm-contact"></div>
+        <div class="form-group"><label>Address</label><input type="text" id="adm-address"></div>
+        <button class="btn-green" onclick="submitAdmission()">Submit Application</button>
+        <button class="btn-back" onclick="show('main-menu')">← Back</button>
+    </div>
+
+    <div id="lock-screen" class="hidden">
+        <div class="lock-icon">🔐</div>
+        <h2>Admin Login</h2>
+        <div class="form-group">
+            <input type="password" id="admin-pass" placeholder="Enter PIN" inputmode="numeric">
+        </div>
+        <button class="btn-blue" onclick="checkPassword()">Unlock Dashboard</button>
+        <button class="btn-back" onclick="show('main-menu')">Cancel</button>
+    </div>
+
+    <div id="teacher-dash" class="hidden">
+        <h2>Admin Dashboard</h2>
+        <button class="btn-orange" onclick="show('admission-requests')">
+            New Admissions <span id="adm-count" class="badge">0</span>
+        </button>
+        <button class="btn-green" onclick="openForm('student')">+ Add Student</button>
+        <button class="btn-purple" onclick="openForm('teacher')">+ Teacher Data</button>
+        <button class="btn-blue" onclick="show('teacher-manage')">Manage Records</button>
+        <button class="btn-red" style="width:100%; margin-top:20px;" onclick="logout()">Logout & Lock</button>
+    </div>
+
+    <div id="admission-requests" class="hidden">
+        <h2>Pending Admissions</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Name</th><th>Class</th><th>Contact</th><th>Action</th></tr></thead>
+                <tbody id="adm-body"></tbody>
+            </table>
+        </div>
+        <button class="btn-back" onclick="show('teacher-dash')">← Back</button>
+    </div>
+
+    <div id="view-all-records" class="hidden">
+        <h2>MCC DATA LIST</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Name</th><th>Class</th><th>Contact</th><th>Total</th></tr></thead>
+                <tbody id="sv-body"></tbody>
+            </table>
+        </div>
+        <button class="btn-back" onclick="show('main-menu')">← Back</button>
+    </div>
+
+    <div id="teacher-manage" class="hidden">
+        <h2>Manage Records</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Name</th><th>Type</th><th>Action</th></tr></thead>
+                <tbody id="manage-body"></tbody>
+            </table>
+        </div>
+        <button class="btn-back" onclick="show('teacher-dash')">← Back</button>
+    </div>
+
+    <div id="entry-form" class="hidden">
+        <h2 id="form-title">Data Entry</h2>
+        <input type="hidden" id="edit-id"><input type="hidden" id="entry-type">
+        <div class="form-group"><label>Name</label><input type="text" id="name"></div>
+        <div id="student-fields">
+            <div class="form-group"><label>Class</label><input type="text" id="class"></div>
+            <div class="form-group"><label>Total Amount (Rs.)</label><input type="number" id="total-amt"></div>
+        </div>
+        <div class="form-group"><label>Contact</label><input type="tel" id="contact"></div>
+        <div id="teacher-fields" class="hidden">
+            <div class="form-group"><label>Salary</label><input type="number" id="salary"></div>
+        </div>
+        <button class="btn-green" onclick="saveData()">Save Record</button>
+        <button class="btn-back" onclick="show('teacher-dash')">Cancel</button>
+    </div>
+</div>
+
+<script>
+    const PASSWORDS = ["9999", "8888", "8800"];
+
+    let studentList = JSON.parse(localStorage.getItem('students')) || [];
+    let teacherList = JSON.parse(localStorage.getItem('teachers')) || [];
+    let admissionList = JSON.parse(localStorage.getItem('admissions')) || [];
+
+    function show(id) {
+        document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        renderTables();
+    }
+
+    // --- Admission Logic ---
+    function submitAdmission() {
+        const name = document.getElementById('adm-name').value;
+        const className = document.getElementById('adm-class').value;
+        const contact = document.getElementById('adm-contact').value;
+        const address = document.getElementById('adm-address').value;
+
+        if(!name || !contact) return alert("Please fill Name and Contact!");
+
+        const newApp = { name, class: className, contact, address, totalAmt: 0 };
+        admissionList.push(newApp);
+        localStorage.setItem('admissions', JSON.stringify(admissionList));
+        
+        alert("Application submitted successfully! Please wait for teacher approval.");
+        document.querySelectorAll('#admission-form input').forEach(i => i.value = "");
+        show('main-menu');
+    }
+
+    function approveAdmission(index) {
+        const app = admissionList[index];
+        // Move to student list
+        studentList.push(app);
+        localStorage.setItem('students', JSON.stringify(studentList));
+        
+        // Remove from admissions
+        admissionList.splice(index, 1);
+        localStorage.setItem('admissions', JSON.stringify(admissionList));
+        
+        alert("Student Approved and added to Data Center!");
+        renderTables();
+    }
+
+    // --- Core Logic ---
+    function checkPassword() {
+        const inputPass = document.getElementById('admin-pass').value;
+        if(PASSWORDS.includes(inputPass)) {
+            show('teacher-dash');
+        } else {
+            alert("Incorrect PIN!");
+        }
+    }
+
+    function logout() {
+        document.getElementById('admin-pass').value = "";
+        show('main-menu');
+    }
+
+    function openForm(type, index = null) {
+        document.getElementById('entry-type').value = type;
+        document.getElementById('edit-id').value = index !== null ? index : "";
+        document.getElementById('student-fields').classList.toggle('hidden', type !== 'student');
+        document.getElementById('teacher-fields').classList.toggle('hidden', type !== 'teacher');
+
+        if(index === null) {
+            document.querySelectorAll('#entry-form input:not([type="hidden"])').forEach(i => i.value = "");
+        } else {
+            const data = type === 'student' ? studentList[index] : teacherList[index];
+            document.getElementById('name').value = data.name;
+            document.getElementById('contact').value = data.contact;
+            if(type === 'student') {
+                document.getElementById('class').value = data.class;
+                document.getElementById('total-amt').value = data.totalAmt;
+            } else {
+                document.getElementById('salary').value = data.salary;
+            }
+        }
+        show('entry-form');
+    }
+
+    function saveData() {
+        const type = document.getElementById('entry-type').value;
+        const index = document.getElementById('edit-id').value;
+        const data = {
+            name: document.getElementById('name').value,
+            contact: document.getElementById('contact').value,
+            class: document.getElementById('class').value,
+            totalAmt: document.getElementById('total-amt').value || 0,
+            salary: document.getElementById('salary').value || 0
+        };
+
+        if(type === 'student') {
+            index === "" ? studentList.push(data) : studentList[index] = data;
+            localStorage.setItem('students', JSON.stringify(studentList));
+        } else {
+            index === "" ? teacherList.push(data) : teacherList[index] = data;
+            localStorage.setItem('teachers', JSON.stringify(teacherList));
+        }
+        show('teacher-dash');
+    }
+
+    function renderTables() {
+        // Update notification count
+        document.getElementById('adm-count').innerText = admissionList.length;
+
+        // Render Student View
+        const sv = document.getElementById('sv-body');
+        sv.innerHTML = "";
+        studentList.forEach(s => {
+            sv.innerHTML += `<tr><td>${s.name}</td><td>${s.class}</td><td>${s.contact}</td><td>Rs.${s.totalAmt}</td></tr>`;
+        });
+
+        // Render Admin Management
+        const m = document.getElementById('manage-body');
+        m.innerHTML = "";
+        studentList.forEach((s, i) => {
+            m.innerHTML += `<tr><td>${s.name}</td><td>Student</td><td><button class="btn-orange" onclick="openForm('student', ${i})">Edit</button></td></tr>`;
+        });
+        teacherList.forEach((t, i) => {
+            m.innerHTML += `<tr><td>${t.name}</td><td>Teacher</td><td><button class="btn-orange" onclick="openForm('teacher', ${i})">Edit</button></td></tr>`;
+        });
+
+        // Render Admission Requests
+        const admB = document.getElementById('adm-body');
+        admB.innerHTML = "";
+        admissionList.forEach((a, i) => {
+            admB.innerHTML += `<tr>
+                <td>${a.name}</td>
+                <td>${a.class}</td>
+                <td>${a.contact}</td>
+                <td>
+                    <button class="btn-green" style="padding:5px 10px; width:auto;" onclick="approveAdmission(${i})">Approve</button>
+                    <button class="btn-red" onclick="deleteAdm(${i})">X</button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    function deleteAdm(index) {
+        if(confirm("Reject this application?")) {
+            admissionList.splice(index, 1);
+            localStorage.setItem('admissions', JSON.stringify(admissionList));
+            renderTables();
+        }
+    }
+
+    renderTables();
+</script>
+</body>
+</html>
