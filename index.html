@@ -34,6 +34,74 @@
 </head>
 <body>
 
+
+
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.firebasestorage.app",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Save student
+  window.addStudent = async function(name, className) {
+    try {
+      await addDoc(collection(db, "students"), {
+        name: name,
+        class: className,
+        createdAt: new Date()
+      });
+
+      alert("Student saved successfully!");
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  };
+
+  // Read students
+  window.showStudents = async function() {
+    try {
+      const snapshot = await getDocs(collection(db, "students"));
+
+      snapshot.forEach((doc) => {
+        console.log(doc.id, doc.data());
+      });
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  };
+</script>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    
 <div class="container">
     
     <div id="main-menu">
@@ -275,4 +343,16 @@
     renderTables();
 </script>
 </body>
+
+
+
+    <input id="studentName" placeholder="Student name">
+<input id="studentClass" placeholder="Class">
+
+<button onclick="addStudent(
+  document.getElementById('studentName').value,
+  document.getElementById('studentClass').value
+)">Save Student</button>
+
+<button onclick="showStudents()">View Students</button>
 </html>
